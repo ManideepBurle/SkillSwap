@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import Button from "react-bootstrap/Button";
 import { FaGoogle } from "react-icons/fa";
+import API_URL from "../../config/api";
 
 const Login = () => {
   const [isHovered, setIsHovered] = useState(false); // State for hover effect
 
   const handleGoogleLogin = () => {
-    window.location.href = "http://localhost:8000/auth/google";
+    window.location.href = `${API_URL}/auth/google`;
   };
 
   const containerStyle = {

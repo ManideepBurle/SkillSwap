@@ -15,6 +15,7 @@ import ProfileCard from "./ProfileCard";
 import "./Discover.css";
 import Search from "./Search";
 import Spinner from "react-bootstrap/Spinner";
+import API_URL from "../../config/api";
 
 const Discover = () => {
   const navigate = useNavigate();
@@ -35,7 +36,7 @@ const Discover = () => {
     const getUser = async () => {
       try {
         setLoading(true);
-        const { data } = await axios.get(`http://localhost:8000/user/registered/getDetails`, {
+        const { data } = await axios.get(`${API_URL}/user/registered/getDetails`, {
           withCredentials: true
         });
         console.log(data.data);
@@ -48,7 +49,7 @@ const Discover = () => {
         }
         localStorage.removeItem("userInfo");
         setUser(null);
-        await axios.get("http://localhost:8000/auth/logout", {
+        await axios.get(`${API_URL}/auth/logout`, {
           withCredentials: true
         });
         navigate("/login");
@@ -56,7 +57,7 @@ const Discover = () => {
     };
     const getDiscoverUsers = async () => {
       try {
-        const { data } = await axios.get("http://localhost:8000/user/discover", {
+        const { data } = await axios.get(`${API_URL}/user/discover`, {
           withCredentials: true
         });
         console.log(data);
@@ -71,7 +72,7 @@ const Discover = () => {
         }
         localStorage.removeItem("userInfo");
         setUser(null);
-        await axios.get("http://localhost:8000/auth/logout", {
+        await axios.get(`${API_URL}/auth/logout`, {
           withCredentials: true
         });
         navigate("/login");

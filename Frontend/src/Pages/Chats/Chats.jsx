@@ -12,6 +12,7 @@ import ScrollableFeed from "react-scrollable-feed";
 import RequestCard from "./RequestCard";
 import "./Chats.css";
 import Modal from "react-bootstrap/Modal";
+import API_URL from "../../config/api";
 
 var socket;
 const Chats = () => {
@@ -73,7 +74,7 @@ const Chats = () => {
     try {
       setChatLoading(true);
       const tempUser = JSON.parse(localStorage.getItem("userInfo"));
-      const { data } = await axios.get("http://localhost:8000/chat", {
+      const { data } = await axios.get(`${API_URL}/chat`, {
         withCredentials: true
       });
       // console.log("Chats", data.data);
@@ -97,7 +98,7 @@ const Chats = () => {
         if (err.response.data.message === "Please Login") {
           localStorage.removeItem("userInfo");
           setUser(null);
-          await axios.get("http://localhost:8000/auth/logout", {
+          await axios.get("${API_URL}/auth/logout", {
             withCredentials: true
           });
           navigate("/login");
@@ -117,7 +118,7 @@ const Chats = () => {
   const handleChatClick = async (chatId) => {
     try {
       setChatMessageLoading(true);
-      const { data } = await axios.get(`http://localhost:8000/message/getMessages/${chatId}`, {
+      const { data } = await axios.get(`${API_URL}/message/getMessages/${chatId}`, {
         withCredentials: true
       });
       setChatMessages(data.data);
@@ -137,7 +138,7 @@ const Chats = () => {
         if (err.response.data.message === "Please Login") {
           localStorage.removeItem("userInfo");
           setUser(null);
-          await axios.get("http://localhost:8000/auth/logout", {
+          await axios.get("${API_URL}/auth/logout", {
             withCredentials: true
           });
           navigate("/login");
@@ -157,7 +158,7 @@ const Chats = () => {
         toast.error("Message is empty");
         return;
       }
-      const { data } = await axios.post("http://localhost:8000/message/sendMessage", { chatId: selectedChat.id, content: message }, {
+      const { data } = await axios.post("${API_URL}/message/sendMessage", { chatId: selectedChat.id, content: message }, {
         withCredentials: true
       });
       // console.log("after sending message", data);
@@ -171,7 +172,7 @@ const Chats = () => {
       if (err?.response?.data?.message) {
         toast.error(err.response.data.message);
         if (err.response.data.message === "Please Login") {
-          await axios.get("http://localhost:8000/auth/logout", {
+          await axios.get("${API_URL}/auth/logout", {
             withCredentials: true
           });
           setUser(null);
@@ -187,7 +188,7 @@ const Chats = () => {
   const getRequests = async () => {
     try {
       setRequestLoading(true);
-      const { data } = await axios.get("http://localhost:8000/request/getRequests", {
+      const { data } = await axios.get("${API_URL}/request/getRequests", {
         withCredentials: true
       });
       setRequests(data.data);
@@ -198,7 +199,7 @@ const Chats = () => {
       if (err?.response?.data?.message) {
         toast.error(err.response.data.message);
         if (err.response.data.message === "Please Login") {
-          await axios.get("http://localhost:8000/auth/logout", {
+          await axios.get("${API_URL}/auth/logout", {
             withCredentials: true
           });
           setUser(null);
@@ -235,7 +236,7 @@ const Chats = () => {
 
     try {
       setAcceptRequestLoading(true);
-      const { data } = await axios.post("http://localhost:8000/request/acceptRequest", { requestId: selectedRequest._id }, {
+      const { data } = await axios.post("${API_URL}/request/acceptRequest", { requestId: selectedRequest._id }, {
         withCredentials: true
       });
       console.log(data);
@@ -247,7 +248,7 @@ const Chats = () => {
       if (err?.response?.data?.message) {
         toast.error(err.response.data.message);
         if (err.response.data.message === "Please Login") {
-          await axios.get("http://localhost:8000/auth/logout", {
+          await axios.get("${API_URL}/auth/logout", {
             withCredentials: true
           });
           setUser(null);

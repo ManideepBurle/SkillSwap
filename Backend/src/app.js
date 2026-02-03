@@ -5,9 +5,22 @@ import passport from "passport";
 
 const app = express();
 
+// Allow multiple origins for CORS (localhost for dev, Vercel for production)
+const allowedOrigins = [
+  "http://localhost:5173",
+  process.env.FRONTEND_URL || "http://localhost:5173"
+];
+
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) === -1) {
+        return callback(new Error('CORS policy violation'), false);
+      }
+      return callback(null, true);
+    },
     credentials: true,
   })
 );
@@ -18,9 +31,13 @@ app.use(express.static("public")); // to use static public folder
 app.use(cookieParser()); // to enable CRUD operation on browser cookies
 
 app.use(function (req, res, next) {
-  res.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
   res.setHeader("Access-Control-Allow-Credentials", "true");
-  // Add other CORS headers as needed
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type,Authorization");
   next();
 });
 

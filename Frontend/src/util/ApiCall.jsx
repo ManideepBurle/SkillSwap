@@ -1,12 +1,13 @@
 import { toast } from "react-toastify";
 import axios from "axios";
-const baseURL = 'http://localhost:8000';
+import API_URL from "../config/api";
+
 const ApiCall = async (url, method, navigate, setUser, data) => {
   console.log("******** Inside ApiCall function ********");
 
   if (method === "GET") {
     try {
-      const response = await axios.get(baseURL + url, {
+      const response = await axios.get(API_URL + url, {
         withCredentials: true
       });
       return response.data;
@@ -29,7 +30,7 @@ const ApiCall = async (url, method, navigate, setUser, data) => {
     }
   } else if (method === "POST") {
     try {
-      const response = await axios.post(baseURL + url, data, {
+      const response = await axios.post(API_URL + url, data, {
         withCredentials: true
       });
       return response.data;

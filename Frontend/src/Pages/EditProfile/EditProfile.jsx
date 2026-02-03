@@ -11,6 +11,7 @@ import "./EditProfile.css";
 import Badge from "react-bootstrap/Badge";
 import { v4 as uuidv4 } from "uuid";
 import { useUser } from "../../util/UserContext";
+import API_URL from "../../config/api";
 
 const EditProfile = () => {
   const navigate = useNavigate();
@@ -90,7 +91,7 @@ const EditProfile = () => {
     console.log("Data: ", data);
     try {
       toast.info("Uploading your pic please wait upload confirmation..");
-      const response = await axios.post("http://localhost:8000/user/uploadPicture", data, {
+      const response = await axios.post("${API_URL}/user/uploadPicture", data, {
         withCredentials: true
       });
       toast.success("Pic uploaded successfully");
@@ -109,7 +110,7 @@ const EditProfile = () => {
         if (error.response.data.message === "Please Login") {
           localStorage.removeItem("userInfo");
           setUser(null);
-          await axios.get("http://localhost:8000/auth/logout", {
+          await axios.get("${API_URL}/auth/logout", {
             withCredentials: true
           });
           navigate("/login");
@@ -338,7 +339,7 @@ const EditProfile = () => {
     }
     try {
       setSaveLoading(true);
-      const { data } = await axios.post("http://localhost:8000/user/updateLocation", form.location, {
+      const { data } = await axios.post("${API_URL}/user/updateLocation", form.location, {
         withCredentials: true
       });
       toast.success("Location updated successfully");
@@ -362,7 +363,7 @@ const EditProfile = () => {
       setSaveLoading(true);
       try {
         console.log("form:", form);
-        const { data } = await axios.post("http://localhost:8000/user/registered/saveRegDetails", form, {
+        const { data } = await axios.post("${API_URL}/user/registered/saveRegDetails", form, {
           withCredentials: true
         });
         toast.success("Details saved successfully");
@@ -384,7 +385,7 @@ const EditProfile = () => {
     if (check1 && check2) {
       setSaveLoading(true);
       try {
-        const { data } = await axios.post("http://localhost:8000/user/registered/saveEduDetail", form, {
+        const { data } = await axios.post("${API_URL}/user/registered/saveEduDetail", form, {
           withCredentials: true
         });
         toast.success("Details saved successfully");
@@ -408,7 +409,7 @@ const EditProfile = () => {
     if (check1 && check2 && check3) {
       setSaveLoading(true);
       try {
-        const { data } = await axios.post("http://localhost:8000/user/registered/saveAddDetail", form, {
+        const { data } = await axios.post("${API_URL}/user/registered/saveAddDetail", form, {
           withCredentials: true
         });
         toast.success("Details saved successfully");

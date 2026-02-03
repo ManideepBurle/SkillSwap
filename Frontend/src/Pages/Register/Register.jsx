@@ -10,6 +10,7 @@ import axios from "axios";
 import "./Register.css";
 import Badge from "react-bootstrap/Badge";
 import { v4 as uuidv4 } from "uuid";
+import API_URL from "../../config/api";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -80,7 +81,7 @@ const Register = () => {
     
     const getUser = async () => {
       try {
-        const { data } = await axios.get("http://localhost:8000/user/unregistered/getDetails", {
+        const { data } = await axios.get(`${API_URL}/user/unregistered/getDetails`, {
           withCredentials: true
         });
         console.log("User Data: ", data.data);
@@ -360,7 +361,7 @@ const Register = () => {
     if (check) {
       setSaveLoading(true);
       try {
-        const { data } = await axios.post("http://localhost:8000/user/unregistered/saveRegDetails", form, {
+        const { data } = await axios.post(`${API_URL}/user/unregistered/saveRegDetails`, form, {
           withCredentials: true
         });
         toast.success("Details saved successfully");
@@ -382,7 +383,7 @@ const Register = () => {
     if (check1 && check2) {
       setSaveLoading(true);
       try {
-        const { data } = await axios.post("http://localhost:8000/user/unregistered/saveEduDetail", form, {
+        const { data } = await axios.post(`${API_URL}/user/unregistered/saveEduDetail`, form, {
           withCredentials: true
         });
         toast.success("Details saved successfully");
@@ -406,7 +407,7 @@ const Register = () => {
     if (check1 && check2 && check3) {
       setSaveLoading(true);
       try {
-        const { data } = await axios.post("http://localhost:8000/user/unregistered/saveAddDetail", form, {
+        const { data } = await axios.post(`${API_URL}/user/unregistered/saveAddDetail`, form, {
           withCredentials: true
         });
         toast.success("Details saved successfully");
@@ -430,7 +431,7 @@ const Register = () => {
     if (check1 && check2 && check3) {
       setSaveLoading(true);
       try {
-        const { data } = await axios.post("http://localhost:8000/user/registerUser", form, {
+        const { data } = await axios.post(`${API_URL}/user/registerUser`, form, {
           withCredentials: true
         });
         toast.success("Registration Successful");

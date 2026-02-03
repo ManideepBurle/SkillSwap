@@ -9,6 +9,7 @@ import { toast } from "react-toastify";
 import axios from "axios";
 import Spinner from "react-bootstrap/Spinner";
 import { Link } from "react-router-dom";
+import API_URL from "../../config/api";
 
 const Profile = () => {
   const { user, setUser } = useUser();
@@ -23,7 +24,7 @@ const Profile = () => {
     const getUser = async () => {
       setLoading(true);
       try {
-        const { data } = await axios.get(`http://localhost:8000/user/registered/getDetails/${username}`, {
+        const { data } = await axios.get(`${API_URL}/user/registered/getDetails/${username}`, {
           withCredentials: true
         });
         console.log(data.data);
@@ -35,7 +36,7 @@ const Profile = () => {
           if (error.response.data.message === "Please Login") {
             localStorage.removeItem("userInfo");
             setUser(null);
-            await axios.get("http://localhost:8000/auth/logout", {
+            await axios.get("${API_URL}/auth/logout", {
               withCredentials: true
             });
             navigate("/login");
@@ -58,7 +59,7 @@ const Profile = () => {
     console.log("Connect");
     try {
       setConnectLoading(true);
-      const { data } = await axios.post(`http://localhost:8000/request/create`, {
+      const { data } = await axios.post(`${API_URL}/request/create`, {
         receiverID: profileUser._id,
       }, {
         withCredentials: true
@@ -79,7 +80,7 @@ const Profile = () => {
         if (error.response.data.message === "Please Login") {
           localStorage.removeItem("userInfo");
           setUser(null);
-          await axios.get("http://localhost:8000/auth/logout", {
+          await axios.get("${API_URL}/auth/logout", {
             withCredentials: true
           });
           navigate("/login");
