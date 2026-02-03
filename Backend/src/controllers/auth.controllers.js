@@ -36,12 +36,21 @@ export const handleGoogleLoginCallback = asyncHandler(async (req, res) => {
   console.log("\n******** Inside handleGoogleLoginCallback function ********");
   // console.log("User Google Info", req.user);
 
+  const isProduction =
+    process.env.NODE_ENV === "production" ||
+    (process.env.BACKEND_URL || "").startsWith("https://");
+  const cookieOptions = {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+  };
+
   const existingUser = await User.findOne({ email: req.user._json.email });
 
   if (existingUser) {
     const jwtToken = generateJWTToken_username(existingUser);
     const expiryDate = new Date(Date.now() + 1 * 60 * 60 * 1000);
-    res.cookie("accessToken", jwtToken, { httpOnly: true, expires: expiryDate, secure: false });
+    res.cookie("accessToken", jwtToken, { ...cookieOptions, expires: expiryDate });
     return res.redirect(`${process.env.FRONTEND_URL}/discover`);
   }
 
@@ -56,7 +65,7 @@ export const handleGoogleLoginCallback = asyncHandler(async (req, res) => {
   }
   const jwtToken = generateJWTToken_email(unregisteredUser);
   const expiryDate = new Date(Date.now() + 0.5 * 60 * 60 * 1000);
-  res.cookie("accessTokenRegistration", jwtToken, { httpOnly: true, expires: expiryDate, secure: false });
+  res.cookie("accessTokenRegistration", jwtToken, { ...cookieOptions, expires: expiryDate });
   return res.redirect(`${process.env.FRONTEND_URL}/register`);
 });
 
