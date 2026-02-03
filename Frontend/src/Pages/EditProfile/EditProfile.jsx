@@ -1,7 +1,7 @@
 import Tab from "react-bootstrap/Tab";
 import Tabs from "react-bootstrap/Tabs";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import Spinner from "react-bootstrap/Spinner";
 import Form from "react-bootstrap/Form";
@@ -14,6 +14,7 @@ import { useUser } from "../../util/UserContext";
 
 const EditProfile = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
   const { user, setUser } = useUser();
@@ -41,6 +42,13 @@ const EditProfile = () => {
     ],
     bio: "",
     projects: [],
+    location: {
+      latitude: null,
+      longitude: null,
+      city: "",
+      state: "",
+      country: "",
+    },
   });
   const [skillsProficientAt, setSkillsProficientAt] = useState("Select some skill");
   const [skillsToLearn, setSkillsToLearn] = useState("Select some skill");
@@ -82,7 +90,9 @@ const EditProfile = () => {
     console.log("Data: ", data);
     try {
       toast.info("Uploading your pic please wait upload confirmation..");
-      const response = await axios.post("/user/uploadPicture", data);
+      const response = await axios.post("http://localhost:8000/user/uploadPicture", data, {
+        withCredentials: true
+      });
       toast.success("Pic uploaded successfully");
       // setPic(response.data.data.url);
       console.log("Pic url:", response.data);
@@ -99,7 +109,9 @@ const EditProfile = () => {
         if (error.response.data.message === "Please Login") {
           localStorage.removeItem("userInfo");
           setUser(null);
-          await axios.get("/auth/logout");
+          await axios.get("http://localhost:8000/auth/logout", {
+            withCredentials: true
+          });
           navigate("/login");
         }
       }
@@ -318,13 +330,41 @@ const EditProfile = () => {
     });
     return flag;
   };
+
+  const handleSaveLocation = async () => {
+    if (form.location?.latitude === null || form.location?.latitude === undefined || form.location?.longitude === null || form.location?.longitude === undefined) {
+      toast.error("Please auto-detect or enter location coordinates");
+      return;
+    }
+    try {
+      setSaveLoading(true);
+      const { data } = await axios.post("http://localhost:8000/user/updateLocation", form.location, {
+        withCredentials: true
+      });
+      toast.success("Location updated successfully");
+      setUser(data.data);
+      localStorage.setItem("userInfo", JSON.stringify(data.data));
+    } catch (error) {
+      console.log(error);
+      if (error?.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("Some error occurred");
+      }
+    } finally {
+      setSaveLoading(false);
+    }
+  };
+
   const handleSaveRegistration = async () => {
     const check = validateRegForm();
     if (check) {
       setSaveLoading(true);
       try {
         console.log("form:", form);
-        const { data } = await axios.post("/user/registered/saveRegDetails", form);
+        const { data } = await axios.post("http://localhost:8000/user/registered/saveRegDetails", form, {
+          withCredentials: true
+        });
         toast.success("Details saved successfully");
       } catch (error) {
         console.log(error);
@@ -344,7 +384,9 @@ const EditProfile = () => {
     if (check1 && check2) {
       setSaveLoading(true);
       try {
-        const { data } = await axios.post("/user/registered/saveEduDetail", form);
+        const { data } = await axios.post("http://localhost:8000/user/registered/saveEduDetail", form, {
+          withCredentials: true
+        });
         toast.success("Details saved successfully");
       } catch (error) {
         console.log(error);
@@ -366,8 +408,16 @@ const EditProfile = () => {
     if (check1 && check2 && check3) {
       setSaveLoading(true);
       try {
-        const { data } = await axios.post("/user/registered/saveAddDetail", form);
+        const { data } = await axios.post("http://localhost:8000/user/registered/saveAddDetail", form, {
+          withCredentials: true
+        });
         toast.success("Details saved successfully");
+        const username = form?.username?.trim();
+        if (username) {
+          navigate(`/profile/${username}`);
+        } else {
+          navigate("/discover");
+        }
       } catch (error) {
         console.log(error);
         if (error?.response?.data?.message) {
@@ -404,6 +454,29 @@ const EditProfile = () => {
   //     }
   //   }
   // };
+
+  const handleSubmit = async () => {
+    setSaveLoading(true);
+    try {
+      toast.success("Profile updated successfully!");
+      const username = form?.username?.trim();
+      const from = location.state?.from;
+      if (from) {
+        navigate(from);
+        return;
+      }
+      if (username) {
+        navigate(`/profile/${username}`);
+      } else {
+        navigate("/discover");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Some error occurred");
+    } finally {
+      setSaveLoading(false);
+    }
+  };
 
   return (
     <div className="register_page ">
@@ -547,6 +620,105 @@ const EditProfile = () => {
                   placeholder="Enter your portfolio link"
                 />
               </div>
+              
+              {/* Location Section */}
+              <div>
+                <label className="mt-3" style={{ color: "#3BB4A1" }}>
+                  📍 Location
+                </label>
+                <br />
+                <button 
+                  type="button"
+                  className="btn btn-primary mt-2 mb-3"
+                  onClick={() => {
+                    if ("geolocation" in navigator) {
+                      navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                          setForm((prevState) => ({
+                            ...prevState,
+                            location: {
+                              ...prevState.location,
+                              latitude: position.coords.latitude,
+                              longitude: position.coords.longitude,
+                            },
+                          }));
+                          toast.success("Location detected!");
+                        },
+                        (error) => {
+                          toast.error("Failed to get location. Please enable location access.");
+                        }
+                      );
+                    } else {
+                      toast.error("Geolocation not supported");
+                    }
+                  }}
+                >
+                  📍 Auto-Detect Location
+                </button>
+                <div className="mt-2">
+                  <label style={{ color: "#3BB4A1", fontSize: "12px" }}>City</label>
+                  <input
+                    type="text"
+                    name="city"
+                    value={form.location?.city || ""}
+                    onChange={(e) => setForm((prevState) => ({
+                      ...prevState,
+                      location: { ...prevState.location, city: e.target.value }
+                    }))}
+                    style={{
+                      borderRadius: "5px",
+                      border: "1px solid #3BB4A1",
+                      padding: "5px",
+                      width: "100%",
+                    }}
+                    placeholder="Enter city"
+                  />
+                </div>
+                <div className="mt-2">
+                  <label style={{ color: "#3BB4A1", fontSize: "12px" }}>State</label>
+                  <input
+                    type="text"
+                    name="state"
+                    value={form.location?.state || ""}
+                    onChange={(e) => setForm((prevState) => ({
+                      ...prevState,
+                      location: { ...prevState.location, state: e.target.value }
+                    }))}
+                    style={{
+                      borderRadius: "5px",
+                      border: "1px solid #3BB4A1",
+                      padding: "5px",
+                      width: "100%",
+                    }}
+                    placeholder="Enter state"
+                  />
+                </div>
+                <div className="mt-2">
+                  <label style={{ color: "#3BB4A1", fontSize: "12px" }}>Country</label>
+                  <input
+                    type="text"
+                    name="country"
+                    value={form.location?.country || ""}
+                    onChange={(e) => setForm((prevState) => ({
+                      ...prevState,
+                      location: { ...prevState.location, country: e.target.value }
+                    }))}
+                    style={{
+                      borderRadius: "5px",
+                      border: "1px solid #3BB4A1",
+                      padding: "5px",
+                      width: "100%",
+                    }}
+                    placeholder="Enter country"
+                  />
+                </div>
+                {form.location?.latitude && form.location?.longitude && (
+                  <div className="mt-2" style={{ fontSize: "12px", color: "#3BB4A1" }}>
+                    ✓ Latitude: {form.location.latitude.toFixed(4)}, Longitude: {form.location.longitude.toFixed(4)}
+                  </div>
+                )}
+              </div>
+              
               {/* Skills Proficient At */}
               <div>
                 <label className="mt-3" style={{ color: "#3BB4A1" }}>
@@ -619,6 +791,14 @@ const EditProfile = () => {
                   Add Skill
                 </button>
               </div>
+              
+              {/* Save Location Button */}
+              <div className="row m-auto d-flex justify-content-center mt-3">
+                <button className="btn btn-success" onClick={handleSaveLocation} disabled={saveLoading}>
+                  {saveLoading ? <Spinner animation="border" variant="primary" /> : "📍 Save Location"}
+                </button>
+              </div>
+              
               <div className="row m-auto d-flex justify-content-center mt-3">
                 <button className="btn btn-warning" onClick={handleSaveRegistration} disabled={saveLoading}>
                   {saveLoading ? <Spinner animation="border" variant="primary" /> : "Save"}
@@ -998,7 +1178,7 @@ const EditProfile = () => {
               </div>
               <div className="row m-auto d-flex justify-content-center mt-3">
                 <button className="btn btn-warning" onClick={handleSaveAdditional} disabled={saveLoading}>
-                  {saveLoading ? <Spinner animation="border" variant="primary" /> : "Save"}
+                  {saveLoading ? <Spinner animation="border" variant="primary" /> : "Confirm"}
                 </button>
                 {/* <button onClick={handleNext} className="mt-2 btn btn-primary">
                   Next

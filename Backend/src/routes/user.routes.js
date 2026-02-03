@@ -14,6 +14,7 @@ import {
   uploadPic,
   discoverUsers,
   sendScheduleMeet,
+  updateUserLocation,
 } from "../controllers/user.controllers.js";
 import { upload } from "../middlewares/multer.middleware.js";
 
@@ -44,5 +45,8 @@ router.route("/discover").get(verifyJWT_username, discoverUsers);
 
 // send schedule meet email
 router.route("/sendScheduleMeet").post(verifyJWT_username, sendScheduleMeet);
+
+// update user location
+router.route("/updateLocation").post(verifyJWT_username, updateUserLocation);
 
 export default router;

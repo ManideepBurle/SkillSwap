@@ -192,6 +192,7 @@ export const registerUser = async (req, res) => {
     education,
     bio,
     projects,
+    location,
   } = req.body;
 
   if (!name || !email || !username || skillsProficientAt.length === 0 || skillsToLearn.length === 0) {
@@ -273,6 +274,7 @@ export const registerUser = async (req, res) => {
     bio: bio,
     projects: projects,
     picture: req.user.picture,
+    location: location || undefined,
   });
 
   if (!newUser) {
@@ -543,33 +545,62 @@ export const discoverUsers = asyncHandler(async (req, res) => {
     "Machine Learning",
   ];
 
-  // Find all the users except the current users who are proficient in the skills that the current user wants to learn and also the the users who are proficient in the web development skills and machine learning skills in the array above
-  //
-
-  //  fetch all users except the current user
+  // Calculate distance between two coordinates (Haversine formula)
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371; // Earth's radius in km
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
 
   const users = await User.find({ username: { $ne: req.user.username } });
-
-  // now make three seperate list of the users who are proficient in the skills that the current user wants to learn, the users who are proficient in the web development skills and the users who are proficient in the machine learning skills and others also limit the size of the array to 5;
-
-  // const users = await User.find({
-  //   skillsProficientAt: { $in: req.user.skillsToLearn },
-  //   username: { $ne: req.user.username },
-  // });
 
   if (!users) {
     throw new ApiError(500, "Error in fetching users");
   }
+
+  // Add distance to each user if both have location data
+  const usersWithDistance = users.map((user) => {
+    let distance = null;
+    const lat1 = req.user.location?.latitude;
+    const lon1 = req.user.location?.longitude;
+    const lat2 = user.location?.latitude;
+    const lon2 = user.location?.longitude;
+    if (lat1 !== null && lat1 !== undefined && lon1 !== null && lon1 !== undefined && lat2 !== null && lat2 !== undefined && lon2 !== null && lon2 !== undefined) {
+      const nLat1 = Number(lat1);
+      const nLon1 = Number(lon1);
+      const nLat2 = Number(lat2);
+      const nLon2 = Number(lon2);
+      if (Number.isFinite(nLat1) && Number.isFinite(nLon1) && Number.isFinite(nLat2) && Number.isFinite(nLon2)) {
+        distance = calculateDistance(nLat1, nLon1, nLat2, nLon2);
+      }
+    }
+    return { ...user._doc, distance };
+  });
+
+  // Sort by distance (closest first), then by relevance
+  usersWithDistance.sort((a, b) => {
+    // If both have distance, sort by distance
+    if (a.distance !== null && b.distance !== null) {
+      return a.distance - b.distance;
+    }
+    // If only one has distance, prioritize that one
+    if (a.distance !== null) return -1;
+    if (b.distance !== null) return 1;
+    // Otherwise, random shuffle
+    return Math.random() - 0.5;
+  });
+
   const usersToLearn = [];
   const webDevUsers = [];
   const mlUsers = [];
   const otherUsers = [];
 
-  // randomly suffle the users array
-
-  users.sort(() => Math.random() - 0.5);
-
-  users.forEach((user) => {
+  usersWithDistance.forEach((user) => {
     if (user.skillsProficientAt.some((skill) => req.user.skillsToLearn.includes(skill)) && usersToLearn.length < 5) {
       usersToLearn.push(user);
     } else if (user.skillsProficientAt.some((skill) => webDevSkills.includes(skill)) && webDevUsers.length < 5) {
@@ -613,4 +644,40 @@ export const sendScheduleMeet = asyncHandler(async (req, res) => {
   await sendMail(to, subject, message);
 
   return res.status(200).json(new ApiResponse(200, null, "Email sent successfully"));
+});
+
+export const updateUserLocation = asyncHandler(async (req, res) => {
+  console.log("\n******** Inside updateUserLocation Controller function ********");
+
+  const { latitude, longitude, city, state, country } = req.body;
+
+  if (latitude === null || latitude === undefined || longitude === null || longitude === undefined) {
+    throw new ApiError(400, "Please provide latitude and longitude");
+  }
+
+  const parsedLatitude = Number(latitude);
+  const parsedLongitude = Number(longitude);
+  if (!Number.isFinite(parsedLatitude) || !Number.isFinite(parsedLongitude)) {
+    throw new ApiError(400, "Latitude and longitude must be valid numbers");
+  }
+
+  const user = await User.findByIdAndUpdate(
+    req.user._id,
+    {
+      location: {
+        latitude: parsedLatitude,
+        longitude: parsedLongitude,
+        city: city || "",
+        state: state || "",
+        country: country || "",
+      },
+    },
+    { new: true }
+  );
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  return res.status(200).json(new ApiResponse(200, user, "Location updated successfully"));
 });

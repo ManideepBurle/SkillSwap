@@ -38,6 +38,13 @@ const Register = () => {
     ],
     bio: "",
     projects: [],
+    location: {
+      latitude: null,
+      longitude: null,
+      city: "",
+      state: "",
+      country: "",
+    },
   });
   const [skillsProficientAt, setSkillsProficientAt] = useState("Select some skill");
   const [skillsToLearn, setSkillsToLearn] = useState("Select some skill");
@@ -47,9 +54,35 @@ const Register = () => {
 
   useEffect(() => {
     setLoading(true);
+    
+    // Get user's geolocation
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setForm((prevState) => ({
+            ...prevState,
+            location: {
+              ...prevState.location,
+              latitude,
+              longitude,
+            },
+          }));
+          
+          // Optional: Get city/state/country from coordinates using reverse geocoding
+          // This is commented out for now, but you can add it later with a service like OpenStreetMap or Google Maps API
+        },
+        (error) => {
+          console.log("Error getting location:", error);
+        }
+      );
+    }
+    
     const getUser = async () => {
       try {
-        const { data } = await axios.get("/user/unregistered/getDetails");
+        const { data } = await axios.get("http://localhost:8000/user/unregistered/getDetails", {
+          withCredentials: true
+        });
         console.log("User Data: ", data.data);
         const edu = data?.data?.education;
         edu.forEach((ele) => {
@@ -327,7 +360,9 @@ const Register = () => {
     if (check) {
       setSaveLoading(true);
       try {
-        const { data } = await axios.post("/user/unregistered/saveRegDetails", form);
+        const { data } = await axios.post("http://localhost:8000/user/unregistered/saveRegDetails", form, {
+          withCredentials: true
+        });
         toast.success("Details saved successfully");
       } catch (error) {
         console.log(error);
@@ -347,7 +382,9 @@ const Register = () => {
     if (check1 && check2) {
       setSaveLoading(true);
       try {
-        const { data } = await axios.post("/user/unregistered/saveEduDetail", form);
+        const { data } = await axios.post("http://localhost:8000/user/unregistered/saveEduDetail", form, {
+          withCredentials: true
+        });
         toast.success("Details saved successfully");
       } catch (error) {
         console.log(error);
@@ -369,7 +406,9 @@ const Register = () => {
     if (check1 && check2 && check3) {
       setSaveLoading(true);
       try {
-        const { data } = await axios.post("/user/unregistered/saveAddDetail", form);
+        const { data } = await axios.post("http://localhost:8000/user/unregistered/saveAddDetail", form, {
+          withCredentials: true
+        });
         toast.success("Details saved successfully");
       } catch (error) {
         console.log(error);
@@ -391,7 +430,9 @@ const Register = () => {
     if (check1 && check2 && check3) {
       setSaveLoading(true);
       try {
-        const { data } = await axios.post("/user/registerUser", form);
+        const { data } = await axios.post("http://localhost:8000/user/registerUser", form, {
+          withCredentials: true
+        });
         toast.success("Registration Successful");
         console.log("Data: ", data.data);
         navigate("/discover");

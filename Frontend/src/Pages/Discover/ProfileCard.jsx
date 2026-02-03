@@ -3,12 +3,15 @@ import Card from "react-bootstrap/Card";
 import "./Card.css";
 import { Link } from "react-router-dom";
 
-const ProfileCard = ({ profileImageUrl, bio, name, skills, rating, username }) => {
+const ProfileCard = ({ profileImageUrl, bio, name, skills, rating, username, distance }) => {
   return (
     <div className="card-container">
       <img className="img-container" src={profileImageUrl} alt="user" />
       <h3>{name}</h3>
       <h6>Rating: {rating} ⭐</h6>
+      {distance !== null && distance !== undefined && (
+        <h6 style={{ color: "#3BB4A1", fontSize: "14px" }}>📍 {distance.toFixed(1)} km away</h6>
+      )}
       <p style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", width: "150px" }}>{bio}</p>
       <div className="prof-buttons">
         {/* <button className="primary">Connect</button> */}

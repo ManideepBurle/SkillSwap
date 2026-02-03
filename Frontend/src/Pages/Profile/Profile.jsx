@@ -3,6 +3,7 @@ import "./Profile.css";
 import Box from "./Box";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { useUser } from "../../util/UserContext";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -13,6 +14,7 @@ const Profile = () => {
   const { user, setUser } = useUser();
   const [profileUser, setProfileUser] = useState(null);
   const { username } = useParams();
+  const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [connectLoading, setConnectLoading] = useState(false);
   const navigate = useNavigate();
@@ -21,7 +23,9 @@ const Profile = () => {
     const getUser = async () => {
       setLoading(true);
       try {
-        const { data } = await axios.get(`/user/registered/getDetails/${username}`);
+        const { data } = await axios.get(`http://localhost:8000/user/registered/getDetails/${username}`, {
+          withCredentials: true
+        });
         console.log(data.data);
         setProfileUser(data.data);
       } catch (error) {
@@ -31,7 +35,9 @@ const Profile = () => {
           if (error.response.data.message === "Please Login") {
             localStorage.removeItem("userInfo");
             setUser(null);
-            await axios.get("/auth/logout");
+            await axios.get("http://localhost:8000/auth/logout", {
+              withCredentials: true
+            });
             navigate("/login");
           }
         }
@@ -52,8 +58,10 @@ const Profile = () => {
     console.log("Connect");
     try {
       setConnectLoading(true);
-      const { data } = await axios.post(`/request/create`, {
+      const { data } = await axios.post(`http://localhost:8000/request/create`, {
         receiverID: profileUser._id,
+      }, {
+        withCredentials: true
       });
 
       console.log(data);
@@ -71,7 +79,9 @@ const Profile = () => {
         if (error.response.data.message === "Please Login") {
           localStorage.removeItem("userInfo");
           setUser(null);
-          await axios.get("/auth/logout");
+          await axios.get("http://localhost:8000/auth/logout", {
+            withCredentials: true
+          });
           navigate("/login");
         }
       }
@@ -141,7 +151,7 @@ const Profile = () => {
               </div>
               <div className="edit-links">
                 {user.username === username && (
-                  <Link to="/edit_profile">
+                  <Link to="/edit_profile" state={{ from: location.pathname }}>
                     <button className="edit-button">Edit Profile ✎</button>
                   </Link>
                 )}

@@ -109,6 +109,28 @@ const userSchema = new Schema(
         },
       },
     ],
+    location: {
+      latitude: {
+        type: Number,
+        default: null,
+      },
+      longitude: {
+        type: Number,
+        default: null,
+      },
+      city: {
+        type: String,
+        default: "",
+      },
+      state: {
+        type: String,
+        default: "",
+      },
+      country: {
+        type: String,
+        default: "",
+      },
+    },
   },
   { timestamps: true }
 );

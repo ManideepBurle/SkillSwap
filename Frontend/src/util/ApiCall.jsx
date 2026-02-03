@@ -1,12 +1,14 @@
 import { toast } from "react-toastify";
 import axios from "axios";
-
+const baseURL = 'http://localhost:8000';
 const ApiCall = async (url, method, navigate, setUser, data) => {
   console.log("******** Inside ApiCall function ********");
 
   if (method === "GET") {
     try {
-      const response = await axios.get(url);
+      const response = await axios.get(baseURL + url, {
+        withCredentials: true
+      });
       return response.data;
     } catch (error) {
       console.error("Error in API call:", error);
@@ -27,7 +29,9 @@ const ApiCall = async (url, method, navigate, setUser, data) => {
     }
   } else if (method === "POST") {
     try {
-      const response = await axios.post(url, data);
+      const response = await axios.post(baseURL + url, data, {
+        withCredentials: true
+      });
       return response.data;
     } catch (error) {
       console.error("Error in API call:", error);

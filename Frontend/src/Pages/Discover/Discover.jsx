@@ -35,7 +35,9 @@ const Discover = () => {
     const getUser = async () => {
       try {
         setLoading(true);
-        const { data } = await axios.get(`/user/registered/getDetails`);
+        const { data } = await axios.get(`http://localhost:8000/user/registered/getDetails`, {
+          withCredentials: true
+        });
         console.log(data.data);
         setUser(data.data);
         localStorage.setItem("userInfo", JSON.stringify(data.data));
@@ -46,13 +48,17 @@ const Discover = () => {
         }
         localStorage.removeItem("userInfo");
         setUser(null);
-        await axios.get("/auth/logout");
+        await axios.get("http://localhost:8000/auth/logout", {
+          withCredentials: true
+        });
         navigate("/login");
       }
     };
     const getDiscoverUsers = async () => {
       try {
-        const { data } = await axios.get("/user/discover");
+        const { data } = await axios.get("http://localhost:8000/user/discover", {
+          withCredentials: true
+        });
         console.log(data);
         setDiscoverUsers(data.data.forYou);
         setWebDevUsers(data.data.webDev);
@@ -65,7 +71,9 @@ const Discover = () => {
         }
         localStorage.removeItem("userInfo");
         setUser(null);
-        await axios.get("/auth/logout");
+        await axios.get("http://localhost:8000/auth/logout", {
+          withCredentials: true
+        });
         navigate("/login");
       } finally {
         setLoading(false);
@@ -129,12 +137,14 @@ const Discover = () => {
                   {discoverUsers && discoverUsers.length > 0 ? (
                     discoverUsers.map((user) => (
                       <ProfileCard
+                        key={user?._id}
                         profileImageUrl={user?.picture}
                         name={user?.name}
                         rating={user?.rating ? user?.rating : 5}
                         bio={user?.bio}
                         skills={user?.skillsProficientAt}
                         username={user?.username}
+                        distance={user?.distance}
                       />
                     ))
                   ) : (
@@ -172,12 +182,14 @@ const Discover = () => {
                   {webDevUsers && webDevUsers.length > 0 ? (
                     webDevUsers.map((user) => (
                       <ProfileCard
+                        key={user?._id}
                         profileImageUrl={user?.picture}
                         name={user?.name}
                         rating={4}
                         bio={user?.bio}
                         skills={user?.skillsProficientAt}
                         username={user?.username}
+                        distance={user?.distance}
                       />
                     ))
                   ) : (
@@ -190,12 +202,14 @@ const Discover = () => {
                   {mlUsers && mlUsers.length > 0 ? (
                     mlUsers.map((user) => (
                       <ProfileCard
+                        key={user?._id}
                         profileImageUrl={user?.picture}
                         name={user?.name}
                         rating={4}
                         bio={user?.bio}
                         skills={user?.skillsProficientAt}
                         username={user?.username}
+                        distance={user?.distance}
                       />
                     ))
                   ) : (
@@ -256,12 +270,14 @@ const Discover = () => {
                   {otherUsers && otherUsers.length > 0 ? (
                     otherUsers.map((user) => (
                       <ProfileCard
+                        key={user?._id}
                         profileImageUrl={user?.picture}
                         name={user?.name}
                         rating={4}
                         bio={user?.bio}
                         skills={user?.skillsProficientAt}
                         username={user?.username}
+                        distance={user?.distance}
                       />
                     ))
                   ) : (
