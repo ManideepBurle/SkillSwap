@@ -28,7 +28,7 @@ export const googleAuthHandler = passport.authenticate("google", {
 });
 
 export const googleAuthCallback = passport.authenticate("google", {
-  failureRedirect: `${process.env.FRONTEND_URL}/login`,
+  failureRedirect: process.env.BACKEND_URL?.includes('localhost') ? "http://localhost:5173/login" : `${process.env.FRONTEND_URL}/login`,
   session: false,
 });
 
@@ -45,13 +45,17 @@ export const handleGoogleLoginCallback = asyncHandler(async (req, res) => {
     sameSite: isProduction ? "none" : "lax",
   };
 
+  // Use localhost frontend if backend is running on localhost
+  const isLocalDev = !process.env.BACKEND_URL || process.env.BACKEND_URL.includes('localhost');
+  const frontendUrl = isLocalDev ? "http://localhost:5173" : (process.env.FRONTEND_URL || "https://skill-swap-jet.vercel.app");
+
   const existingUser = await User.findOne({ email: req.user._json.email });
 
   if (existingUser) {
     const jwtToken = generateJWTToken_username(existingUser);
     const expiryDate = new Date(Date.now() + 1 * 60 * 60 * 1000);
     res.cookie("accessToken", jwtToken, { ...cookieOptions, expires: expiryDate });
-    return res.redirect(`${process.env.FRONTEND_URL}/discover`);
+    return res.redirect(`${frontendUrl}/discover`);
   }
 
   let unregisteredUser = await UnRegisteredUser.findOne({ email: req.user._json.email });
@@ -66,7 +70,7 @@ export const handleGoogleLoginCallback = asyncHandler(async (req, res) => {
   const jwtToken = generateJWTToken_email(unregisteredUser);
   const expiryDate = new Date(Date.now() + 0.5 * 60 * 60 * 1000);
   res.cookie("accessTokenRegistration", jwtToken, { ...cookieOptions, expires: expiryDate });
-  return res.redirect(`${process.env.FRONTEND_URL}/register`);
+  return res.redirect(`${frontendUrl}/register`);
 });
 
 export const handleLogout = (req, res) => {

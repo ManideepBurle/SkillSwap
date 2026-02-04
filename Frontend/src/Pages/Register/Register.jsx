@@ -587,6 +587,110 @@ const Register = () => {
                   placeholder="Enter your portfolio link"
                 />
               </div>
+              
+              {/* Location Section */}
+              <div>
+                <label className="mt-3" style={{ color: "#3BB4A1" }}>
+                  📍 Location
+                </label>
+                <br />
+                <button
+                  type="button"
+                  className="btn btn-primary mt-2 mb-3"
+                  onClick={() => {
+                    if ("geolocation" in navigator) {
+                      navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                          setForm((prevState) => ({
+                            ...prevState,
+                            location: {
+                              ...prevState.location,
+                              latitude: position.coords.latitude,
+                              longitude: position.coords.longitude,
+                            },
+                          }));
+                          toast.success("Location detected!");
+                        },
+                        () => {
+                          toast.error("Failed to get location. Please enable location access.");
+                        }
+                      );
+                    } else {
+                      toast.error("Geolocation not supported");
+                    }
+                  }}
+                >
+                  📍 Auto-Detect Location
+                </button>
+                <div className="mt-2">
+                  <label style={{ color: "#3BB4A1", fontSize: "12px" }}>City</label>
+                  <input
+                    type="text"
+                    name="city"
+                    value={form.location?.city || ""}
+                    onChange={(e) =>
+                      setForm((prevState) => ({
+                        ...prevState,
+                        location: { ...prevState.location, city: e.target.value },
+                      }))
+                    }
+                    style={{
+                      borderRadius: "5px",
+                      border: "1px solid #3BB4A1",
+                      padding: "5px",
+                      width: "100%",
+                    }}
+                    placeholder="Enter city"
+                  />
+                </div>
+                <div className="mt-2">
+                  <label style={{ color: "#3BB4A1", fontSize: "12px" }}>State</label>
+                  <input
+                    type="text"
+                    name="state"
+                    value={form.location?.state || ""}
+                    onChange={(e) =>
+                      setForm((prevState) => ({
+                        ...prevState,
+                        location: { ...prevState.location, state: e.target.value },
+                      }))
+                    }
+                    style={{
+                      borderRadius: "5px",
+                      border: "1px solid #3BB4A1",
+                      padding: "5px",
+                      width: "100%",
+                    }}
+                    placeholder="Enter state"
+                  />
+                </div>
+                <div className="mt-2">
+                  <label style={{ color: "#3BB4A1", fontSize: "12px" }}>Country</label>
+                  <input
+                    type="text"
+                    name="country"
+                    value={form.location?.country || ""}
+                    onChange={(e) =>
+                      setForm((prevState) => ({
+                        ...prevState,
+                        location: { ...prevState.location, country: e.target.value },
+                      }))
+                    }
+                    style={{
+                      borderRadius: "5px",
+                      border: "1px solid #3BB4A1",
+                      padding: "5px",
+                      width: "100%",
+                    }}
+                    placeholder="Enter country"
+                  />
+                </div>
+                {form.location?.latitude && form.location?.longitude && (
+                  <div className="mt-2" style={{ fontSize: "12px", color: "#3BB4A1" }}>
+                    ✓ Latitude: {form.location.latitude.toFixed(4)}, Longitude: {form.location.longitude.toFixed(4)}
+                  </div>
+                )}
+              </div>
               {/* Skills Proficient At */}
               <div>
                 <label className="mt-3" style={{ color: "#3BB4A1" }}>

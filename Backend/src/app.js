@@ -8,7 +8,8 @@ const app = express();
 // Allow multiple origins for CORS (localhost for dev, Vercel for production)
 const allowedOrigins = [
   "http://localhost:5173",
-  process.env.FRONTEND_URL || "http://localhost:5173"
+  process.env.FRONTEND_URL || "http://localhost:5173",
+  "https://skill-swap-jet.vercel.app"
 ];
 
 app.use(

@@ -55,13 +55,15 @@ export const saveRegUnRegisteredUser = asyncHandler(async (req, res) => {
 
   const { name, email, username, linkedinLink, githubLink, portfolioLink, skillsProficientAt, skillsToLearn } =
     req.body;
+  const resolvedEmail = email || req.user?.email;
+  const resolvedName = name || req.user?.name;
   // console.log("Body: ", req.body);
 
-  if (!name || !email || !username || skillsProficientAt.length === 0 || skillsToLearn.length === 0) {
+  if (!resolvedName || !resolvedEmail || !username || skillsProficientAt.length === 0 || skillsToLearn.length === 0) {
     throw new ApiError(400, "Please provide all the details");
   }
 
-  if (!email.match(/^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$/)) {
+  if (!resolvedEmail.match(/^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$/)) {
     throw new ApiError(400, "Please provide valid email");
   }
 
@@ -86,16 +88,17 @@ export const saveRegUnRegisteredUser = asyncHandler(async (req, res) => {
   }
 
   const user = await UnRegisteredUser.findOneAndUpdate(
-    { email: email },
+    { email: resolvedEmail },
     {
-      name: name,
+      name: resolvedName,
       username: username,
       linkedinLink: linkedinLink,
       githubLink: githubLink,
       portfolioLink: portfolioLink,
       skillsProficientAt: skillsProficientAt,
       skillsToLearn: skillsToLearn,
-    }
+    },
+    { new: true, upsert: true, setDefaultsOnInsert: true }
   );
 
   if (!user) {
