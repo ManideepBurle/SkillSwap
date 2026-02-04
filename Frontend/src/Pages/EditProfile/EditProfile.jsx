@@ -339,7 +339,7 @@ const EditProfile = () => {
     }
     try {
       setSaveLoading(true);
-      const { data } = await axios.post("${API_URL}/user/updateLocation", form.location, {
+      const { data } = await axios.post(`${API_URL}/user/updateLocation`, form.location, {
         withCredentials: true
       });
       toast.success("Location updated successfully");
