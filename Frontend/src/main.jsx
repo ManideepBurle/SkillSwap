@@ -9,10 +9,10 @@ import { UserContextProvider } from "./util/UserContext.jsx";
 
 if (import.meta.env.DEV) {
   console.log("Running in development mode");
-  axios.defaults.baseURL = import.meta.env.VITE_LOCALHOST;
+  axios.defaults.baseURL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 } else {
   console.log("Running in production mode");
-  axios.defaults.baseURL = import.meta.env.VITE_SERVER_URL;
+  axios.defaults.baseURL = import.meta.env.VITE_API_URL || "https://skillswap-x4dx.onrender.com";
 }
 axios.defaults.withCredentials = true;
 
