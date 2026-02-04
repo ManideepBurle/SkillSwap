@@ -227,12 +227,16 @@ const Chats = () => {
   };
 
   const handleRequestClick = (request) => {
+    console.log("Selected request:", request);
+    console.log("Request _id:", request._id);
     setSelectedRequest(request);
     setRequestModalShow(true);
   };
 
   const handleRequestAccept = async (e) => {
     console.log("Request accepted");
+    console.log("SelectedRequest object:", selectedRequest);
+    console.log("SelectedRequest._id:", selectedRequest?._id);
 
     try {
       setAcceptRequestLoading(true);
@@ -268,7 +272,9 @@ const Chats = () => {
     console.log("Request rejected");
     try {
       setAcceptRequestLoading(true);
-      const { data } = axios.post("/request/rejectRequest", { requestId: selectedRequest._id });
+      const { data } = await axios.post(`${API_URL}/request/rejectRequest`, { requestId: selectedRequest._id }, {
+        withCredentials: true
+      });
       console.log(data);
       toast.success(data.message);
       setRequests((prevState) => prevState.filter((request) => request._id !== selectedRequest._id));
@@ -277,7 +283,9 @@ const Chats = () => {
       if (err?.response?.data?.message) {
         toast.error(err.response.data.message);
         if (err.response.data.message === "Please Login") {
-          await axios.get("/auth/logout");
+          await axios.get(`${API_URL}/auth/logout`, {
+            withCredentials: true
+          });
           setUser(null);
           localStorage.removeItem("userInfo");
           navigate("/login");

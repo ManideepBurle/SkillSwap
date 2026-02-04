@@ -25,16 +25,15 @@ export const UserDetails = asyncHandler(async (req, res) => {
 
   const receiverID = user._id;
   const senderID = req.user._id;
-  const request = await Request.find({
-    $or: [
-      { sender: senderID, receiver: receiverID },
-      { sender: receiverID, receiver: senderID },
-    ],
+  // Only check if current user sent a request to the profile user
+  const request = await Request.findOne({
+    sender: senderID,
+    receiver: receiverID,
   });
 
   // console.log("request", request);
 
-  const status = request.length > 0 ? request[0].status : "Connect";
+  const status = request ? request.status : "Connect";
 
   // console.log(" userDetail: ", userDetail);
   // console.log("user", user);
