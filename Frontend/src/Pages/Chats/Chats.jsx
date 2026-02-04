@@ -98,7 +98,7 @@ const Chats = () => {
         if (err.response.data.message === "Please Login") {
           localStorage.removeItem("userInfo");
           setUser(null);
-          await axios.get("${API_URL}/auth/logout", {
+          await axios.get(`${API_URL}/auth/logout`, {
             withCredentials: true
           });
           navigate("/login");
@@ -138,7 +138,7 @@ const Chats = () => {
         if (err.response.data.message === "Please Login") {
           localStorage.removeItem("userInfo");
           setUser(null);
-          await axios.get("${API_URL}/auth/logout", {
+          await axios.get(`${API_URL}/auth/logout`, {
             withCredentials: true
           });
           navigate("/login");
@@ -158,7 +158,7 @@ const Chats = () => {
         toast.error("Message is empty");
         return;
       }
-      const { data } = await axios.post("${API_URL}/message/sendMessage", { chatId: selectedChat.id, content: message }, {
+      const { data } = await axios.post(`${API_URL}/message/sendMessage`, { chatId: selectedChat.id, content: message }, {
         withCredentials: true
       });
       // console.log("after sending message", data);
@@ -172,7 +172,7 @@ const Chats = () => {
       if (err?.response?.data?.message) {
         toast.error(err.response.data.message);
         if (err.response.data.message === "Please Login") {
-          await axios.get("${API_URL}/auth/logout", {
+          await axios.get(`${API_URL}/auth/logout`, {
             withCredentials: true
           });
           setUser(null);
@@ -188,7 +188,7 @@ const Chats = () => {
   const getRequests = async () => {
     try {
       setRequestLoading(true);
-      const { data } = await axios.get("${API_URL}/request/getRequests", {
+      const { data } = await axios.get(`${API_URL}/request/getRequests`, {
         withCredentials: true
       });
       setRequests(data.data);
@@ -199,7 +199,7 @@ const Chats = () => {
       if (err?.response?.data?.message) {
         toast.error(err.response.data.message);
         if (err.response.data.message === "Please Login") {
-          await axios.get("${API_URL}/auth/logout", {
+          await axios.get(`${API_URL}/auth/logout`, {
             withCredentials: true
           });
           setUser(null);
@@ -236,7 +236,7 @@ const Chats = () => {
 
     try {
       setAcceptRequestLoading(true);
-      const { data } = await axios.post("${API_URL}/request/acceptRequest", { requestId: selectedRequest._id }, {
+      const { data } = await axios.post(`${API_URL}/request/acceptRequest`, { requestId: selectedRequest._id }, {
         withCredentials: true
       });
       console.log(data);
@@ -248,7 +248,7 @@ const Chats = () => {
       if (err?.response?.data?.message) {
         toast.error(err.response.data.message);
         if (err.response.data.message === "Please Login") {
-          await axios.get("${API_URL}/auth/logout", {
+          await axios.get(`${API_URL}/auth/logout`, {
             withCredentials: true
           });
           setUser(null);

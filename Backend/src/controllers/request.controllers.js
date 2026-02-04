@@ -39,51 +39,54 @@ export const getRequests = asyncHandler(async (req, res, next) => {
 
   const requests = await Request.find({ receiver: receiverID, status: "Pending" }).populate("sender");
 
-  if (requests.length > 0) {
-    const sendersDetails = requests.map((request) => {
-      return request._doc.sender;
-    });
-    return res.status(200).json(new ApiResponse(200, sendersDetails, "Requests fetched successfully"));
+  if (!requests || requests.length === 0) {
+    return res.status(200).json(new ApiResponse(200, [], "No pending requests"));
   }
 
-  return res.status(200).json(new ApiResponse(200, requests, "Requests fetched successfully"));
+  // Return full request objects with populated sender data
+  const requestsWithSenderDetails = requests.map((request) => ({
+    _id: request._id,
+    id: request._id,
+    ...request.sender._doc,
+    sender: request.sender._id,
+    status: request.status,
+  }));
+
+  return res.status(200).json(new ApiResponse(200, requestsWithSenderDetails, "Requests fetched successfully"));
 });
 
 export const acceptRequest = asyncHandler(async (req, res, next) => {
   console.log("\n******** Inside acceptRequest Controller function ********");
 
   const { requestId } = req.body;
-  const senderId = req.user._id;
+  const receiverID = req.user._id;
 
-  // console.log("RequestId: ", requestId);
-  // console.log("Sender ID: ", senderId);
+  // Find the request where current user is the receiver
+  const existingRequest = await Request.findById(requestId);
 
-  const existingRequest = await Request.find({ sender: requestId, receiver: senderId });
-
-  // console.log("Existing Request: ", existingRequest);
-
-  if (existingRequest.length === 0) {
+  if (!existingRequest) {
     throw new ApiError(400, "Request does not exist");
   }
 
-  const existingChat = await Chat.find({ users: { $all: [requestId, senderId] } });
+  if (existingRequest.receiver.toString() !== receiverID.toString()) {
+    throw new ApiError(400, "Unauthorized: You are not the receiver of this request");
+  }
+
+  const senderID = existingRequest.sender;
+
+  const existingChat = await Chat.find({ users: { $all: [senderID, receiverID] } });
 
   if (existingChat.length > 0) {
     throw new ApiError(400, "Chat already exists");
   }
 
   const chat = await Chat.create({
-    users: [requestId, senderId],
+    users: [senderID, receiverID],
   });
 
   if (!chat) return next(new ApiError(500, "Chat not created"));
 
-  await Request.findOneAndUpdate(
-    { sender: requestId, receiver: senderId },
-    {
-      status: "Connected",
-    }
-  );
+  await Request.findByIdAndUpdate(requestId, { status: "Connected" });
 
   res.status(201).json(new ApiResponse(201, chat, "Request accepted successfully"));
 });
@@ -92,20 +95,19 @@ export const rejectRequest = asyncHandler(async (req, res, next) => {
   console.log("\n******** Inside rejectRequest Controller function ********");
 
   const { requestId } = req.body;
-  const senderId = req.user._id;
+  const receiverID = req.user._id;
 
-  // console.log("RequestId: ", requestId);
-  // console.log("Sender ID: ", senderId);
+  const existingRequest = await Request.findById(requestId);
 
-  const existingRequest = await Request.find({ sender: requestId, receiver: senderId, status: "Pending" });
-
-  // console.log("Existing Request: ", existingRequest);
-
-  if (existingRequest.length === 0) {
+  if (!existingRequest) {
     throw new ApiError(400, "Request does not exist");
   }
 
-  await Request.findOneAndUpdate({ sender: requestId, receiver: senderId }, { status: "Rejected" });
+  if (existingRequest.receiver.toString() !== receiverID.toString()) {
+    throw new ApiError(400, "Unauthorized: You are not the receiver of this request");
+  }
+
+  await Request.findByIdAndUpdate(requestId, { status: "Rejected" });
 
   res.status(200).json(new ApiResponse(200, null, "Request rejected successfully"));
 });

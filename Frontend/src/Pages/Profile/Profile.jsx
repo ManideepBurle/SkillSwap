@@ -36,7 +36,7 @@ const Profile = () => {
           if (error.response.data.message === "Please Login") {
             localStorage.removeItem("userInfo");
             setUser(null);
-            await axios.get("${API_URL}/auth/logout", {
+            await axios.get(`${API_URL}/auth/logout`, {
               withCredentials: true
             });
             navigate("/login");
@@ -80,7 +80,7 @@ const Profile = () => {
         if (error.response.data.message === "Please Login") {
           localStorage.removeItem("userInfo");
           setUser(null);
-          await axios.get("${API_URL}/auth/logout", {
+          await axios.get(`${API_URL}/auth/logout`, {
             withCredentials: true
           });
           navigate("/login");
