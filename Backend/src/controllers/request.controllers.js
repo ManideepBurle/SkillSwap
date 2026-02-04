@@ -45,10 +45,9 @@ export const getRequests = asyncHandler(async (req, res, next) => {
 
   // Return full request objects with populated sender data
   const requestsWithSenderDetails = requests.map((request) => ({
-    _id: request._id,
-    id: request._id,
+    requestId: request._id,
+    senderId: request.sender._id,
     ...request.sender._doc,
-    sender: request.sender._id,
     status: request.status,
   }));
 
@@ -110,4 +109,25 @@ export const rejectRequest = asyncHandler(async (req, res, next) => {
   await Request.findByIdAndUpdate(requestId, { status: "Rejected" });
 
   res.status(200).json(new ApiResponse(200, null, "Request rejected successfully"));
+});
+
+export const withdrawRequest = asyncHandler(async (req, res, next) => {
+  console.log("\n******** Inside withdrawRequest Controller function ********");
+
+  const { receiverId } = req.body;
+  const senderID = req.user._id;
+
+  const existingRequest = await Request.findOne({
+    sender: senderID,
+    receiver: receiverId,
+    status: "Pending",
+  });
+
+  if (!existingRequest) {
+    throw new ApiError(400, "Request does not exist");
+  }
+
+  await Request.findByIdAndDelete(existingRequest._id);
+
+  res.status(200).json(new ApiResponse(200, null, "Request withdrawn successfully"));
 });

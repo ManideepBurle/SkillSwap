@@ -91,6 +91,42 @@ const Profile = () => {
     }
   };
 
+  const withdrawHandler = async () => {
+    console.log("Withdraw request");
+    try {
+      setConnectLoading(true);
+      const { data } = await axios.post(`${API_URL}/request/withdrawRequest`, {
+        receiverId: profileUser._id,
+      }, {
+        withCredentials: true
+      });
+
+      console.log(data);
+      toast.success(data.message);
+      setProfileUser((prevState) => {
+        return {
+          ...prevState,
+          status: "Connect",
+        };
+      });
+    } catch (error) {
+      console.log(error);
+      if (error?.response?.data?.message) {
+        toast.error(error.response.data.message);
+        if (error.response.data.message === "Please Login") {
+          localStorage.removeItem("userInfo");
+          setUser(null);
+          await axios.get(`${API_URL}/auth/logout`, {
+            withCredentials: true
+          });
+          navigate("/login");
+        }
+      }
+    } finally {
+      setConnectLoading(false);
+    }
+  };
+
   return (
     <div className="profile-container">
       <div className="container" style={{ minHeight: "86vh" }}>
@@ -129,14 +165,20 @@ const Profile = () => {
                       <div className="buttons">
                         <button
                           className="connect-button"
-                          onClick={profileUser?.status === "Connect" ? connectHandler : undefined}
+                          onClick={
+                            profileUser?.status === "Connect"
+                              ? connectHandler
+                              : profileUser?.status === "Pending"
+                                ? withdrawHandler
+                                : undefined
+                          }
                         >
                           {connectLoading ? (
                             <>
                               <Spinner animation="border" variant="light" size="sm" style={{ marginRight: "0.5rem" }} />
                             </>
                           ) : (
-                            profileUser?.status
+                            profileUser?.status === "Pending" ? "Withdraw" : profileUser?.status
                           )}
                         </button>
                         <Link to={`/report/${profileUser.username}`}>
