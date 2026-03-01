@@ -7,6 +7,7 @@ import { UnRegisteredUser } from "../models/unRegisteredUser.model.js";
 import { generateJWTToken_username } from "../utils/generateJWTToken.js";
 import { uploadOnCloudinary } from "../config/connectCloudinary.js";
 import { sendMail } from "../utils/SendMail.js";
+import path from "path";
 
 export const userDetailsWithoutID = asyncHandler(async (req, res) => {
   console.log("\n******** Inside userDetailsWithoutID Controller function ********");
@@ -329,7 +330,8 @@ export const saveRegRegisteredUser = asyncHandler(async (req, res) => {
       skillsProficientAt: skillsProficientAt,
       skillsToLearn: skillsToLearn,
       picture: picture,
-    }
+    },
+    { new: true }
   );
 
   if (!user) {
@@ -509,17 +511,24 @@ export const saveAddRegisteredUser = asyncHandler(async (req, res) => {
 // });
 
 export const uploadPic = asyncHandler(async (req, res) => {
-  const LocalPath = req.files?.picture[0]?.path;
+  const LocalPath = req.files?.picture?.[0]?.path;
 
   if (!LocalPath) {
     throw new ApiError(400, "Avatar file is required");
   }
+
   const picture = await uploadOnCloudinary(LocalPath);
-  if (!picture) {
-    throw new ApiError(500, "Error uploading picture");
+  const uploadedUrl = picture?.secure_url || picture?.url;
+
+  if (uploadedUrl) {
+    return res.status(200).json(new ApiResponse(200, { url: uploadedUrl }, "Picture uploaded successfully"));
   }
 
-  res.status(200).json(new ApiResponse(200, { url: picture.url }, "Picture uploaded successfully"));
+  const fileName = path.basename(LocalPath);
+  const backendUrl = process.env.BACKEND_URL || `${req.protocol}://${req.get("host")}`;
+  const localFileUrl = `${backendUrl}/temp/${encodeURIComponent(fileName)}`;
+
+  res.status(200).json(new ApiResponse(200, { url: localFileUrl }, "Picture uploaded locally successfully"));
 });
 
 export const discoverUsers = asyncHandler(async (req, res) => {

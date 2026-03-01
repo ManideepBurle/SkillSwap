@@ -27,3 +27,7 @@ dist-ssr
 *.sw?
 
 *docker-compose.yml
+
+# Backend temp uploads
+Backend/public/temp/*
+!Backend/public/temp/.gitkeep

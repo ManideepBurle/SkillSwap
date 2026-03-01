@@ -21,7 +21,7 @@ const EditProfile = () => {
   const { user, setUser } = useUser();
 
   const [form, setForm] = useState({
-    profilePhoto: null,
+    picture: null,
     name: "",
     email: "",
     username: "",
@@ -86,8 +86,13 @@ const EditProfile = () => {
   };
 
   const handleFileChange = async (e) => {
+    const selectedFile = e.target.files?.[0];
+    if (!selectedFile) {
+      return;
+    }
+
     const data = new FormData();
-    data.append("picture", e.target.files[0]);
+    data.append("picture", selectedFile);
     console.log("Data: ", data);
     try {
       toast.info("Uploading your pic please wait upload confirmation..");
@@ -97,11 +102,19 @@ const EditProfile = () => {
       toast.success("Pic uploaded successfully");
       // setPic(response.data.data.url);
       console.log("Pic url:", response.data);
-      setForm(() => {
+      setForm((prevState) => {
         return {
-          ...form,
+          ...prevState,
           picture: response.data.data.url,
         };
+      });
+      setUser((prevUser) => {
+        const updatedUser = {
+          ...(prevUser || {}),
+          picture: response.data.data.url,
+        };
+        localStorage.setItem("userInfo", JSON.stringify(updatedUser));
+        return updatedUser;
       });
     } catch (error) {
       console.log(error);
@@ -367,6 +380,10 @@ const EditProfile = () => {
           withCredentials: true
         });
         toast.success("Details saved successfully");
+        if (data?.data) {
+          setUser(data.data);
+          localStorage.setItem("userInfo", JSON.stringify(data.data));
+        }
       } catch (error) {
         console.log(error);
         if (error?.response?.data?.message) {
@@ -733,7 +750,7 @@ const EditProfile = () => {
                 >
                   <option>Select some skill</option>
                   {skills.map((skill, index) => (
-                    <option key={index} value={skill}>
+                    <option key={`${skill}-${index}`} value={skill}>
                       {skill}
                     </option>
                   ))}
@@ -742,7 +759,7 @@ const EditProfile = () => {
                   <div>
                     {form.skillsProficientAt.map((skill, index) => (
                       <Badge
-                        key={index}
+                        key={`${skill}-${index}`}
                         bg="secondary"
                         className="ms-2 mt-2"
                         style={{ cursor: "pointer" }}
@@ -768,7 +785,7 @@ const EditProfile = () => {
                 >
                   <option>Select some skill</option>
                   {skills.map((skill, index) => (
-                    <option key={index} value={skill}>
+                    <option key={`${skill}-${index}`} value={skill}>
                       {skill}
                     </option>
                   ))}
@@ -777,7 +794,7 @@ const EditProfile = () => {
                   <div>
                     {form.skillsToLearn.map((skill, index) => (
                       <Badge
-                        key={index}
+                        key={`${skill}-${index}`}
                         bg="secondary"
                         className="ms-2 mt-2 "
                         style={{ cursor: "pointer" }}
@@ -811,7 +828,7 @@ const EditProfile = () => {
             </Tab>
             <Tab eventKey="education" title="Education">
               {form?.education?.map((edu, index) => (
-                <div className="border border-dark rounded-1 p-3 m-1" key={edu?._id}>
+                <div className="border border-dark rounded-1 p-3 m-1" key={edu?._id || edu?.id || `edu-${index}`}>
                   {index !== 0 && (
                     <span className="w-100 d-flex justify-content-end">
                       <button className="w-25" onClick={(e) => handleRemoveEducation(e, edu?._id)}>
@@ -980,7 +997,7 @@ const EditProfile = () => {
                 <label style={{ color: "#3BB4A1" }}>Projects</label>
 
                 {form?.projects?.map((project, index) => (
-                  <div className="border border-dark rounded-1 p-3 m-1" key={project?._id}>
+                  <div className="border border-dark rounded-1 p-3 m-1" key={project?._id || project?.id || `project-${index}`}>
                     <span className="w-100 d-flex justify-content-end">
                       <button
                         className="w-25"
@@ -1022,7 +1039,7 @@ const EditProfile = () => {
                     >
                       <option>Select some Tech Stack</option>
                       {skills.map((skill, index) => (
-                        <option key={index} value={skill}>
+                        <option key={`${skill}-${index}`} value={skill}>
                           {skill}
                         </option>
                       ))}
@@ -1031,7 +1048,7 @@ const EditProfile = () => {
                       <div>
                         {form?.projects[index]?.techStack.map((skill, i) => (
                           <Badge
-                            key={i}
+                            key={`${skill}-${i}`}
                             bg="secondary"
                             className="ms-2 mt-2"
                             style={{ cursor: "pointer" }}
